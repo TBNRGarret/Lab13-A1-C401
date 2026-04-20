@@ -47,11 +47,11 @@
 ---
 
 ## 4. Incident Response (Group)
-- [SCENARIO_NAME]: (e.g., rag_slow)
-- [SYMPTOMS_OBSERVED]: 
-- [ROOT_CAUSE_PROVED_BY]: (List specific Trace ID or Log Line)
-- [FIX_ACTION]: 
-- [PREVENTIVE_MEASURE]: 
+- [SCENARIO_NAME]: core_banking_fail
+- [SYMPTOMS_OBSERVED]: Khách hàng gặp lỗi 500 khi kiểm tra số dư, Error Rate trên Dashboard tăng vọt, Alert high_error_rate (P1) được kích hoạt.
+- [ROOT_CAUSE_PROVED_BY]: Hàm `mock_core_banking_api()` gặp lỗi 'Connection Timeout to Core Banking' (truy vết qua Langfuse Trace Waterfall).
+- [FIX_ACTION]: Tắt toggle giả lập lỗi (disable incident), ứng dụng phục hồi và Error Rate giảm dần.
+- [PREVENTIVE_MEASURE]: Triển khai cơ chế Circuit Breaker hoặc Fallback API để đảm bảo tính sẵn sàng khi Core Banking gặp sự cố.
 
 ---
 
@@ -86,7 +86,10 @@
 1. Tổ chức và chuẩn hóa file báo cáo `blueprint-template.md`, thu thập Evidence (Tracing ảnh, bảng tính SLO, Error rate) từ các thành viên để hoàn thiện tài liệu nộp lab.
 2. Viết toàn bộ Kịch bản Demo (Demo Script) bao gồm 3 phần: Chạy luồng chuẩn (Normal Flow) nhằm giới thiệu Regex che Credit Card, luồng sự cố (Incident Flow) giả lập lỗi Core Banking 500, và luồng Debugging tìm Root Cause qua Grafana/Langfuse.
 3. Đóng vai trò Demo Lead trong buổi thuyết trình, kết nối và dẫn dắt giải thích cách hệ thống Log + Trace + Metrics phối hợp để đạt mục tiêu Observability theo chuẩn PCI-DSS (đối với dữ liệu tài chính).
-- **[EVIDENCE_LINK]**: _(Sẽ dán link commit sau khi hoàn thành toàn bộ repo)_
+- **[EVIDENCE_LINK]**: 
+  - [4644c3b](https://github.com/TBNRGarret/Lab13-A1-C401/commit/4644c3b) - Update rule VIETNAMESE address
+  - [4c3c927](https://github.com/TBNRGarret/Lab13-A1-C401/commit/4c3c927) - Update PII Rule
+  - [36e9464](https://github.com/TBNRGarret/Lab13-A1-C401/commit/36e9464) - Implement logging correlation ID and PII redaction
 
 ---
 
