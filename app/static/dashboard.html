@@ -6,16 +6,21 @@
   <title>Day 13 Local Dashboard</title>
   <style>
     :root {
-      --bg: #f4f6f2;
-      --surface: #ffffff;
-      --text: #1d2a25;
+      --bg: #f2f1ea;
+      --surface: rgba(255, 255, 255, 0.9);
+      --surface-strong: #ffffff;
+      --text: #18231f;
       --muted: #5d6f67;
-      --line: #d9e2dc;
+      --line: rgba(109, 135, 126, 0.2);
       --ok: #1f7a5d;
       --warn: #b66a10;
       --danger: #c13f2a;
       --accent: #136f63;
       --accent-soft: #d9f0ec;
+      --teal-glow: rgba(19, 111, 99, 0.16);
+      --amber-glow: rgba(182, 106, 16, 0.14);
+      --coral-glow: rgba(193, 63, 42, 0.14);
+      --blue-glow: rgba(39, 102, 168, 0.14);
       --font: "IBM Plex Sans", "Segoe UI", sans-serif;
     }
 
@@ -25,7 +30,8 @@
       margin: 0;
       background:
         radial-gradient(1200px 500px at 5% -20%, #e7efe3 0%, transparent 60%),
-        radial-gradient(1000px 450px at 95% -20%, #e2eceb 0%, transparent 55%),
+        radial-gradient(1000px 450px at 95% -20%, #efe4cd 0%, transparent 55%),
+        linear-gradient(180deg, #f7f4ec 0%, #edf2ef 100%),
         var(--bg);
       color: var(--text);
       font-family: var(--font);
@@ -70,11 +76,51 @@
 
     .panel {
       background: var(--surface);
+      backdrop-filter: blur(10px);
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 14px;
-      box-shadow: 0 6px 18px rgba(16, 34, 26, 0.05);
+      box-shadow: 0 14px 30px rgba(16, 34, 26, 0.08);
+      position: relative;
+      overflow: hidden;
     }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, rgba(19, 111, 99, 0.92), rgba(19, 111, 99, 0.05));
+    }
+
+    #panel-latency { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(224, 244, 239, 0.92)); }
+    #panel-traffic { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(228, 239, 249, 0.92)); }
+    #panel-error { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255, 239, 235, 0.95)); }
+    #panel-cost { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255, 244, 224, 0.94)); }
+    #panel-tokens { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247, 237, 221, 0.94)); }
+    #panel-quality { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(235, 244, 228, 0.94)); }
+
+    #panel-latency::before { background: linear-gradient(90deg, #136f63, transparent); }
+    #panel-traffic::before { background: linear-gradient(90deg, #2766a8, transparent); }
+    #panel-error::before { background: linear-gradient(90deg, #c13f2a, transparent); }
+    #panel-cost::before { background: linear-gradient(90deg, #b66a10, transparent); }
+    #panel-tokens::before { background: linear-gradient(90deg, #8b5e1c, transparent); }
+    #panel-quality::before { background: linear-gradient(90deg, #4d8b31, transparent); }
+
+    #panel-latency .value { color: #136f63; }
+    #panel-traffic .value { color: #2766a8; }
+    #panel-error .value { color: #c13f2a; }
+    #panel-cost .value { color: #b66a10; }
+    #panel-tokens .value { color: #8b5e1c; }
+    #panel-quality .value { color: #4d8b31; }
+
+    #panel-latency svg.spark { box-shadow: inset 0 0 0 1px rgba(19, 111, 99, 0.05), 0 10px 24px var(--teal-glow); }
+    #panel-traffic svg.spark { box-shadow: inset 0 0 0 1px rgba(39, 102, 168, 0.05), 0 10px 24px var(--blue-glow); }
+    #panel-error svg.spark { box-shadow: inset 0 0 0 1px rgba(193, 63, 42, 0.05), 0 10px 24px var(--coral-glow); }
+    #panel-cost svg.spark,
+    #panel-tokens svg.spark { box-shadow: inset 0 0 0 1px rgba(182, 106, 16, 0.05), 0 10px 24px var(--amber-glow); }
+    #panel-quality svg.spark { box-shadow: inset 0 0 0 1px rgba(77, 139, 49, 0.05), 0 10px 24px rgba(77, 139, 49, 0.12); }
 
     .panel-header {
       display: flex;
@@ -143,12 +189,23 @@
     }
 
     .log-panel {
-      background: var(--surface);
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(241, 246, 244, 0.95));
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 14px;
       margin-top: 14px;
-      box-shadow: 0 6px 18px rgba(16, 34, 26, 0.05);
+      box-shadow: 0 14px 30px rgba(16, 34, 26, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .log-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #18231f, #136f63, #b66a10, transparent);
     }
 
     .log-panel h2 {
@@ -187,32 +244,101 @@
       font-size: 0.78rem;
       line-height: 1.55;
       display: grid;
-      gap: 2px;
+      gap: 8px;
     }
 
     .log-row {
       display: grid;
-      grid-template-columns: 170px 52px 90px 1fr;
-      gap: 6px;
-      padding: 4px 6px;
-      border-radius: 6px;
+      grid-template-columns: 156px 66px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
       align-items: start;
+      border: 1px solid rgba(109, 135, 126, 0.16);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 18px rgba(16, 34, 26, 0.05);
     }
 
-    .log-row:hover { background: #f0f5f2; }
+    .log-row:hover {
+      background: rgba(255, 255, 255, 0.94);
+      transform: translateY(-1px);
+    }
 
-    .log-row.level-error { background: #fff5f4; }
-    .log-row.level-warning { background: #fffbf0; }
-    .log-row.level-critical { background: #ffe9e6; }
+    .log-row.level-info { border-color: rgba(31, 122, 93, 0.18); }
+    .log-row.level-warning { background: linear-gradient(180deg, #fffdf6, #fff6e8); border-color: rgba(182, 106, 16, 0.28); }
+    .log-row.level-error { background: linear-gradient(180deg, #fff8f7, #fff0ed); border-color: rgba(193, 63, 42, 0.28); }
+    .log-row.level-critical { background: linear-gradient(180deg, #fff1ef, #ffe8e3); border-color: rgba(193, 63, 42, 0.36); box-shadow: 0 12px 24px rgba(193, 63, 42, 0.12); }
+    .log-row.is-important { outline: 2px solid rgba(193, 63, 42, 0.14); }
 
-    .log-ts { color: var(--muted); white-space: nowrap; }
-    .log-level { font-weight: 700; text-transform: uppercase; font-size: 0.72rem; }
+    .log-ts { color: var(--muted); white-space: nowrap; font-size: 0.75rem; }
+    .log-level {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      background: rgba(255, 255, 255, 0.75);
+    }
     .log-level.info { color: var(--ok); }
     .log-level.warning { color: var(--warn); }
     .log-level.error, .log-level.critical { color: var(--danger); }
-    .log-service { color: #6b8b83; }
-    .log-event { color: var(--text); word-break: break-word; }
+    .log-main { display: grid; gap: 6px; min-width: 0; }
+    .log-topline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .log-service {
+      color: #205c55;
+      font-weight: 700;
+      font-size: 0.73rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .log-event {
+      color: var(--text);
+      word-break: break-word;
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+    .log-message {
+      color: var(--muted);
+      word-break: break-word;
+      font-size: 0.77rem;
+    }
+    .log-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .log-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(19, 111, 99, 0.08);
+      color: #175a51;
+      border: 1px solid rgba(19, 111, 99, 0.14);
+      font-size: 0.71rem;
+      font-weight: 600;
+    }
+    .log-tag.alert { background: rgba(193, 63, 42, 0.08); color: #9c2f20; border-color: rgba(193, 63, 42, 0.16); }
+    .log-tag.warn { background: rgba(182, 106, 16, 0.09); color: #8c5510; border-color: rgba(182, 106, 16, 0.16); }
+    .log-tag.info { background: rgba(39, 102, 168, 0.08); color: #255d97; border-color: rgba(39, 102, 168, 0.15); }
     .log-empty { color: var(--muted); font-size: 0.85rem; padding: 12px 0; }
+
+    @media (max-width: 920px) {
+      .log-row { grid-template-columns: 1fr; }
+      .log-topline { align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -220,7 +346,7 @@
     <header class="head">
       <div>
         <h1 class="title">Day 13 Observability Dashboard</h1>
-        <p class="subtitle">Default range: 1h | Auto refresh: 15s | Main layer: 6 panels</p>
+        <p class="subtitle">Default range: 1h | Auto refresh: 15s | Main layer: 6 panels | SLOs from config/slo.yaml | Alerts from docs/alerts.md</p>
       </div>
       <div class="meta">
         <div id="lastUpdated">Last updated: --</div>
@@ -234,7 +360,7 @@
           <h2>1) Latency P50/P95/P99 (ms)</h2>
           <p class="value" id="latencyValue">P95: 0 ms</p>
         </div>
-        <div class="hint">SLO line: P95 &lt; 1000 ms</div>
+        <div class="hint">SLO: P95 &lt; 1000 ms | Alert P2: latency_p95_ms &gt; 1500 for 10m</div>
         <div id="latencyStatus"></div>
         <svg class="spark" id="latencyChart" viewBox="0 0 520 128" preserveAspectRatio="none"></svg>
       </article>
@@ -253,7 +379,7 @@
           <h2>3) Error rate with breakdown (%)</h2>
           <p class="value" id="errorValue">0.00%</p>
         </div>
-        <div class="hint">SLO line: error rate &lt; 1%</div>
+        <div class="hint">SLO: error rate &lt; 1% | Alert P1: error_rate_pct &gt; 1 for 5m</div>
         <div id="errorStatus"></div>
         <svg class="spark" id="errorChart" viewBox="0 0 520 128" preserveAspectRatio="none"></svg>
         <ul class="error-list" id="errorBreakdown"></ul>
@@ -264,7 +390,7 @@
           <h2>4) Cost over time (USD)</h2>
           <p class="value" id="costValue">$0.0000 total</p>
         </div>
-        <div class="hint">SLO line (daily budget guide): &lt; $5.00/day</div>
+        <div class="hint">SLO: daily cost &lt; $5.00 | Alert P2: hourly cost &gt; 2x baseline (~$0.0042/req avg guide)</div>
         <svg class="spark" id="costChart" viewBox="0 0 520 128" preserveAspectRatio="none"></svg>
       </article>
 
@@ -273,7 +399,7 @@
           <h2>5) Tokens In/Out</h2>
           <p class="value" id="tokenValue">in: 0 | out: 0</p>
         </div>
-        <div class="hint">Leading indicator for cost spikes</div>
+        <div class="hint">Alert P3: tokens_out_total &gt; 50000 in 1h | Leading indicator for daily cost</div>
         <svg class="spark" id="tokenChart" viewBox="0 0 520 128" preserveAspectRatio="none"></svg>
       </article>
 
@@ -282,7 +408,7 @@
           <h2>6) Quality proxy (average)</h2>
           <p class="value" id="qualityValue">0.00</p>
         </div>
-        <div class="hint">SLO line: quality avg &gt;= 0.70</div>
+        <div class="hint">SLO: quality avg &gt;= 0.70 | Alert P2: quality_score_avg &lt; 0.70 for 15m</div>
         <div id="qualityStatus"></div>
         <svg class="spark" id="qualityChart" viewBox="0 0 520 128" preserveAspectRatio="none"></svg>
       </article>
@@ -361,8 +487,14 @@
       if (typeof options.threshold === "number") {
         const range = Math.max(1e-9, maxValue - minValue);
         const y = chartHeight - ((options.threshold - minValue) / range) * chartHeight + padTop;
-        const color = options.thresholdColor || "#b66a10";
-        thresholdLine = `<line x1="0" y1="${y.toFixed(2)}" x2="${width}" y2="${y.toFixed(2)}" stroke="${color}" stroke-dasharray="6 4" stroke-width="1.5" />`;
+        const color = options.thresholdColor || "#1f7a5d";
+        thresholdLine += `<line x1="0" y1="${y.toFixed(2)}" x2="${width}" y2="${y.toFixed(2)}" stroke="${color}" stroke-dasharray="6 4" stroke-width="1.5" />`;
+      }
+      if (typeof options.threshold2 === "number") {
+        const range = Math.max(1e-9, maxValue - minValue);
+        const y = chartHeight - ((options.threshold2 - minValue) / range) * chartHeight + padTop;
+        const color = options.threshold2Color || "#c13f2a";
+        thresholdLine += `<line x1="0" y1="${y.toFixed(2)}" x2="${width}" y2="${y.toFixed(2)}" stroke="${color}" stroke-dasharray="4 3" stroke-width="1.5" />`;
       }
 
       const area = pts
@@ -397,17 +529,17 @@
         `P95: ${formatNum(snapshot.latency_p95, 0)} ms`;
       document.getElementById("latencyStatus").innerHTML =
         snapshot.latency_p95 <= 1000
-          ? pill("ok", "Within SLO")
+          ? pill("ok", "Within SLO <1000ms")
           : snapshot.latency_p95 <= 1500
-            ? pill("warn", "Near threshold")
-            : pill("danger", "SLO breached");
+            ? pill("warn", "SLO breached, below alert")
+            : pill("danger", "P2 alert zone >1500ms");
 
       document.getElementById("trafficValue").textContent =
         `${traffic} req | ${formatNum(qps, 2)} qps`;
 
       document.getElementById("errorValue").textContent = `${formatNum(errorRate, 2)}%`;
       document.getElementById("errorStatus").innerHTML =
-        errorRate < 1 ? pill("ok", "Below 1% target") : pill("danger", "Above 1% target");
+        errorRate < 1 ? pill("ok", "Within SLO <1%") : pill("danger", "P1 alert zone >1% error rate");
 
       document.getElementById("costValue").textContent =
         `$${formatNum(snapshot.total_cost_usd, 4)} total | avg $${formatNum(snapshot.avg_cost_usd, 4)}/req`;
@@ -417,7 +549,7 @@
 
       document.getElementById("qualityValue").textContent = formatNum(snapshot.quality_avg, 2);
       document.getElementById("qualityStatus").innerHTML =
-        snapshot.quality_avg >= 0.7 ? pill("ok", "Meets target") : pill("warn", "Below 0.70 target");
+        snapshot.quality_avg >= 0.7 ? pill("ok", "Meets SLO >=0.70") : pill("warn", "P2 alert zone <0.70");
 
       const breakdown = snapshot.error_breakdown || {};
       const items = Object.keys(breakdown).length
@@ -429,9 +561,11 @@
       const p95Vals = lastPoints.map((h) => Number(h.snapshot.latency_p95 || 0));
       drawSpark("latencyChart", p95Vals, {
         min: 0,
-        max: Math.max(1500, ...p95Vals, 1),
+        max: Math.max(2000, ...p95Vals, 1),
         threshold: 1000,
-        thresholdColor: "#b66a10",
+        thresholdColor: "#1f7a5d",
+        threshold2: 1500,
+        threshold2Color: "#c13f2a",
       });
 
       const qpsVals = lastPoints.map((h, idx) => {
@@ -463,13 +597,15 @@
         min: 0,
         max: Math.max(5, ...costVals, 0.1),
         threshold: 5,
-        thresholdColor: "#b66a10",
+        thresholdColor: "#1f7a5d",
       });
 
       const tokenVals = lastPoints.map((h) => Number(h.snapshot.tokens_out_total || 0));
       drawSpark("tokenChart", tokenVals, {
         min: 0,
-        max: Math.max(200, ...tokenVals, 1),
+        max: Math.max(50000, ...tokenVals, 1),
+        threshold: 50000,
+        thresholdColor: "#b66a10",
       });
 
       const qualityVals = lastPoints.map((h) => Number(h.snapshot.quality_avg || 0));
@@ -477,7 +613,7 @@
         min: 0,
         max: 1,
         threshold: 0.7,
-        thresholdColor: "#b66a10",
+        thresholdColor: "#1f7a5d",
       });
     }
 
@@ -515,6 +651,22 @@
       const search = document.getElementById('logSearch').value.toLowerCase();
       const stream = document.getElementById('logStream');
 
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function tag(label, value, kind = '') {
+        const safeLabel = escapeHtml(label);
+        const safeValue = escapeHtml(value);
+        const cls = kind ? `log-tag ${kind}` : 'log-tag';
+        return `<span class="${cls}"><strong>${safeLabel}</strong> ${safeValue}</span>`;
+      }
+
       const filtered = records.filter((r) => {
         if (levelFilter && (r.level || '').toLowerCase() !== levelFilter) return false;
         if (search) {
@@ -534,16 +686,35 @@
         const ts = fmtTs(r.ts);
         const service = r.service || '-';
         const event = r.event || '';
-        const extra = [];
-        if (r.correlation_id && r.correlation_id !== 'MISSING') extra.push(`cid=${r.correlation_id.slice(0,8)}`);
-        if (r.latency_ms != null) extra.push(`${r.latency_ms}ms`);
-        if (r.error_type) extra.push(`err=${r.error_type}`);
-        const extraStr = extra.length ? ` <span style="color:var(--muted)">${extra.join(' ')}</span>` : '';
-        return `<div class="log-row level-${level}">
-          <span class="log-ts">${ts}</span>
-          <span class="log-level ${level}">${level}</span>
-          <span class="log-service">${service}</span>
-          <span class="log-event">${event}${extraStr}</span>
+        const tags = [];
+        const isImportant = level === 'error' || level === 'critical' || level === 'warning' || r.error_type || r.latency_ms > 1000;
+
+        if (r.correlation_id && r.correlation_id !== 'MISSING') tags.push(tag('CID', r.correlation_id.slice(0, 12), 'info'));
+        if (r.session_id) tags.push(tag('Session', r.session_id, 'info'));
+        if (r.feature) tags.push(tag('Feature', r.feature));
+        if (r.model) tags.push(tag('Model', r.model));
+        if (r.latency_ms != null) tags.push(tag('Latency', `${r.latency_ms}ms`, r.latency_ms > 1000 ? 'warn' : ''));
+        if (r.tokens_out != null) tags.push(tag('Out', r.tokens_out, r.tokens_out > 500 ? 'warn' : ''));
+        if (r.cost_usd != null) tags.push(tag('Cost', `$${Number(r.cost_usd).toFixed(4)}`, Number(r.cost_usd) > 0.0042 ? 'warn' : ''));
+        if (r.error_type) tags.push(tag('Error', r.error_type, 'alert'));
+
+        const messageBits = [];
+        if (r.payload?.detail) messageBits.push(`detail=${r.payload.detail}`);
+        if (r.payload?.message_preview) messageBits.push(`message=${r.payload.message_preview}`);
+        if (r.payload?.answer_preview) messageBits.push(`answer=${r.payload.answer_preview}`);
+        const message = messageBits.length ? `<div class="log-message">${escapeHtml(messageBits.join(' | '))}</div>` : '';
+
+        return `<div class="log-row level-${level} ${isImportant ? 'is-important' : ''}">
+          <span class="log-ts">${escapeHtml(ts)}</span>
+          <span class="log-level ${level}">${escapeHtml(level)}</span>
+          <div class="log-main">
+            <div class="log-topline">
+              <span class="log-service">${escapeHtml(service)}</span>
+              <span class="log-event">${escapeHtml(event)}</span>
+            </div>
+            <div class="log-tags">${tags.join('')}</div>
+            ${message}
+          </div>
         </div>`;
       }).join('');
     }
