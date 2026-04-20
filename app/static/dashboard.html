@@ -359,6 +359,38 @@
       background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 6px; margin-top: 4px;
     }
 
+    .log-raw-wrap {
+      margin-top: 6px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.58);
+      overflow: hidden;
+    }
+
+    .log-raw-label {
+      display: block;
+      padding: 6px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #93c5fd;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      background: rgba(15, 23, 42, 0.88);
+    }
+
+    .log-raw {
+      margin: 0;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.73rem;
+      line-height: 1.55;
+      color: #dbeafe;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
     /* =========================================
        6. RESPONSIVE QUERIES
        ========================================= */
@@ -674,7 +706,15 @@
         const msgBits = [];
         if (r.payload?.detail) msgBits.push(r.payload.detail);
         if (r.payload?.message_preview) msgBits.push(r.payload.message_preview);
+        if (r.payload?.answer_preview) msgBits.push(r.payload.answer_preview);
         const msgHtml = msgBits.length ? `<div class="log-message">${escapeHtml(msgBits.join(' | '))}</div>` : '';
+        const rawJson = escapeHtml(JSON.stringify(r, null, 2));
+        const rawHtml = `
+          <div class="log-raw-wrap">
+            <div class="log-raw-label">Full JSON log line</div>
+            <pre class="log-raw">${rawJson}</pre>
+          </div>
+        `;
 
         return `
           <div class="log-row level-${level}">
@@ -687,6 +727,7 @@
               </div>
               ${tags.length ? `<div class="log-tags">${tags.join('')}</div>` : ''}
               ${msgHtml}
+              ${rawHtml}
             </div>
           </div>
         `;
