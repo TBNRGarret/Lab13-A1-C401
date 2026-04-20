@@ -1,48 +1,42 @@
 service: day13-observability-lab
-version: "1.0"
-owner: Member C - SLO & Alerts
 window: 28d
 
+# Baselines measured from load_test.py (10 requests, concurrency 5):
+#   latency_p95 = 151ms | error_rate = 0% | avg_cost = $0.0021/req | quality_avg = 0.88
+
 slis:
-  # SLI 1: Latency - P95 must stay under 3 seconds
   latency_p95_ms:
-    objective: 3000          # ms - maximum allowed P95 latency
-    target: 99.5             # % of time window the SLO must be met
-    burn_rate_alert: 5x      # alert when burning budget 5x faster than allowed
-    note: "Measured from request receipt to final response. Excludes network overhead."
+    objective: 1000
+    target: 99.5
+    unit: ms
+    note: >
+      Baseline P95 is ~151ms. Setting SLO at 1000ms gives 6x headroom.
+      The rag_slow incident pushes latency to ~2500ms+, which will breach this SLO
+      and trigger the high_latency_p95 alert.
 
-  # SLI 2: Error Rate - less than 2% of requests may fail
   error_rate_pct:
-    objective: 2             # % - maximum acceptable error rate
-    target: 99.0             # % availability target
-    burn_rate_alert: 10x
-    note: "Counts HTTP 5xx responses and unhandled exceptions."
-
-  # SLI 3: Daily Cost - must not exceed $2.50 per day
-  daily_cost_usd:
-    objective: 2.50          # USD per day budget ceiling
-    target: 100.0            # always in budget (hard cap)
-    note: "Sum of LLM token costs + embedding costs per calendar day."
-
-  # SLI 4: Quality Score - average heuristic quality must be >= 0.75
-  quality_score_avg:
-    objective: 0.75          # minimum acceptable average quality (0.0–1.0)
-    target: 95.0             # % of time window the SLO must be met
-    note: "Heuristic quality proxy: checks answer completeness and relevance."
-
-  # SLI 5: Throughput - system must handle at least 1 RPS baseline
-  throughput_rps:
-    objective: 1.0           # minimum requests per second
+    objective: 1
     target: 99.0
-    note: "Baseline load expectation. Drops below threshold signal capacity issues."
+    unit: "%"
+    note: >
+      Baseline error rate is 0%. Setting SLO at 1% is tight but realistic.
+      The tool_fail incident causes RuntimeError (500s), which will breach this SLO
+      and trigger the high_error_rate alert (P1).
 
-error_budget:
-  latency_p95_ms:
-    window_minutes: 40320    # 28 days in minutes
-    budget_minutes: 201.6    # 0.5% of window = 201.6 minutes of downtime allowed
-  error_rate_pct:
-    window_minutes: 40320
-    budget_minutes: 403.2    # 1.0% of window allowed
+  daily_cost_usd:
+    objective: 5.00
+    target: 100.0
+    unit: USD
+    note: >
+      Baseline avg cost is $0.0021/req. At 1000 req/day that is ~$2.10.
+      Budget of $5.00/day provides buffer. The cost_spike incident (4x token
+      multiplier) pushes cost to ~$0.0084/req, which at volume breaches budget.
+
   quality_score_avg:
-    window_minutes: 40320
-    budget_minutes: 2016     # 5.0% of window allowed
+    objective: 0.70
+    target: 95.0
+    unit: score (0-1)
+    note: >
+      Baseline quality is 0.88 (heuristic: doc match + answer length + keyword overlap).
+      SLO at 0.70 allows for some degradation but catches severe regressions
+      (e.g., if RAG returns no docs, score drops to ~0.6).

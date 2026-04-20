@@ -1,72 +1,48 @@
 alerts:
-  # ────────── P1 Alerts (Critical - Page Immediately) ──────────
-
+  # --- P1: Critical alerts (immediate page) ---
   - name: high_error_rate
     severity: P1
-    condition: error_rate_pct > 5 for 5m
+    condition: error_rate_pct > 1 for 5m
     type: symptom-based
-    description: "More than 5% of requests are failing. Users are receiving errors."
     owner: team-oncall
     runbook: docs/alerts.md#2-high-error-rate
-    notify:
-      - channel: "#incidents"
-        method: pagerduty
+    action: Page on-call immediately. Check error_type breakdown in logs.
+    slo_link: error_rate_pct (objective < 1%)
 
-  # ────────── P2 Alerts (Warning - Investigate Soon) ──────────
-
+  # --- P2: Warning alerts (investigate within 30m) ---
   - name: high_latency_p95
     severity: P2
-    condition: latency_p95_ms > 5000 for 30m
+    condition: latency_p95_ms > 1500 for 10m
     type: symptom-based
-    description: "P95 latency exceeds 5000ms for 30 minutes. SLO burn rate is high."
     owner: team-oncall
     runbook: docs/alerts.md#1-high-latency-p95
-    notify:
-      - channel: "#alerts"
-        method: slack
+    action: Check slowest traces. Compare RAG vs LLM span duration.
+    slo_link: latency_p95_ms (objective < 1000ms)
 
   - name: cost_budget_spike
     severity: P2
     condition: hourly_cost_usd > 2x_baseline for 15m
     type: symptom-based
-    description: "Hourly cost is running at more than 2x the baseline for 15 minutes."
     owner: finops-owner
     runbook: docs/alerts.md#3-cost-budget-spike
-    notify:
-      - channel: "#finops"
-        method: slack
+    action: Check tokens_out per request. Look for cost_spike incident toggle.
+    slo_link: daily_cost_usd (objective < $5.00/day)
 
-  - name: quality_score_degraded
+  - name: low_quality_score
     severity: P2
-    condition: quality_score_avg < 0.60 for 15m
+    condition: quality_score_avg < 0.70 for 15m
     type: symptom-based
-    description: "Average quality score dropped below 0.60. Responses may be unreliable."
-    owner: team-oncall
-    runbook: docs/alerts.md#4-quality-score-degraded
-    notify:
-      - channel: "#alerts"
-        method: slack
+    owner: ml-oncall
+    runbook: docs/alerts.md#4-low-quality-score
+    action: Check if RAG returns empty docs. Compare doc_count in traces.
+    slo_link: quality_score_avg (objective > 0.70)
 
-  # ────────── P3 Alerts (Low - Informational) ──────────
-
-  - name: slo_error_budget_warning
+  - name: token_budget_exceeded
     severity: P3
-    condition: error_budget_remaining_pct < 20
-    type: slo-based
-    description: "Less than 20% of the monthly error budget remains. Reduce risk."
-    owner: team-oncall
-    runbook: docs/alerts.md#5-slo-error-budget-warning
-    notify:
-      - channel: "#reliability"
-        method: slack
+    condition: tokens_out_total > 50000 in 1h
+    type: cause-based
+    owner: finops-owner
+    runbook: docs/alerts.md#5-token-budget-exceeded
+    action: Investigate which feature/user is generating high token output.
+    slo_link: daily_cost_usd (leading indicator)
 
-  - name: low_throughput
-    severity: P3
-    condition: requests_per_minute < 1 for 10m
-    type: symptom-based
-    description: "No traffic observed for 10 minutes. Possible deployment or network issue."
-    owner: team-oncall
-    runbook: docs/alerts.md#6-low-throughput
-    notify:
-      - channel: "#alerts"
-        method: slack

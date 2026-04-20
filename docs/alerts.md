@@ -1,124 +1,172 @@
 # Alert Rules and Runbooks
 
-This document provides step-by-step runbooks for every alert defined in `config/alert_rules.yaml`.
+> Each runbook follows the **Detect → Triage → Mitigate → Prevent** pattern.
+> Incident toggles: `rag_slow`, `tool_fail`, `cost_spike` (see `data/incidents.json`).
 
 ---
 
-## 1. High Latency P95
+## 1. High latency P95
 
-- **Severity**: P2
-- **Trigger**: `latency_p95_ms > 5000 for 30m`
-- **Impact**: Tail latency breaches SLO — 0.5% of users experience slow responses
+- **Alert name**: `high_latency_p95`
+- **Severity**: P2 (investigate within 30 minutes)
+- **Trigger**: `latency_p95_ms > 1500 for 10m`
+- **SLO**: P95 latency < 1000ms (99.5% of 28-day window)
+- **Impact**: Tail latency breaches SLO; users experience slow responses
 
-**Investigation Steps**:
-1. Open top slow traces in the last 1 hour on Langfuse
-2. Compare RAG span duration vs LLM span duration
-3. Check if incident toggle `rag_slow` is enabled via `/admin/incidents`
-4. Look for `latency_ms` > 5000 in structured logs: `grep '"latency_ms"' data/logs.jsonl | jq 'select(.latency_ms > 5000)'`
+### Detection
+- Dashboard Panel 1 (Latency P50/P95/P99) shows P95 crossing the 1000ms SLO line
+- `/metrics` endpoint: check `latency_p95` and `latency_p99`
+- Langfuse: filter traces by duration > 1000ms
 
-**Mitigation**:
-- Truncate long queries before RAG retrieval
-- Switch to a faster/smaller model for the generation step
-- Lower the maximum prompt token limit
-- Enable fallback retrieval source
+### Triage
+1. Open the **slowest traces** in Langfuse from the last 1 hour
+2. Compare the **RAG span** duration vs **LLM span** duration
+   - If RAG span > 2000ms → retrieval is the bottleneck (likely `rag_slow` incident)
+   - If LLM span > 2000ms → model inference is slow
+3. Check incident toggles: `GET /health` → look at `incidents.rag_slow`
+4. Check recent log entries: filter by `latency_ms > 1000` in `data/logs.jsonl`
 
-**Escalate to P1 if**: latency_p95_ms > 10000 for more than 1 hour
+### Mitigation
+1. **If `rag_slow` is enabled**: Disable it: `POST /incidents/rag_slow/disable`
+2. **If organic**: Truncate long queries before sending to RAG
+3. Fallback to a simpler retrieval source
+4. Lower prompt size to reduce LLM processing time
 
----
-
-## 2. High Error Rate
-
-- **Severity**: P1
-- **Trigger**: `error_rate_pct > 5 for 5m`
-- **Impact**: Users receive failed responses — revenue and trust impact
-
-**Investigation Steps**:
-1. Group recent logs by `error_type`: `jq 'select(.level=="error") | .error_type' data/logs.jsonl | sort | uniq -c`
-2. Inspect failed traces in Langfuse, filter by `status = error`
-3. Determine whether failures are LLM-related, tool-related, or schema-related
-4. Check for recent deployments or config changes
-
-**Mitigation**:
-- Rollback the latest deployment if correlated with error spike
-- Disable the failing tool or RAG source temporarily
-- Retry with a fallback LLM model
-- Apply circuit breaker if downstream service is down
-
-**Escalate if**: error_rate_pct > 20% — declare incident, notify stakeholders
+### Prevention
+- Set up auto-scaling for the retrieval layer
+- Add a circuit breaker with timeout (e.g., 2s max for RAG)
+- Cache frequent queries
 
 ---
 
-## 3. Cost Budget Spike
+## 2. High error rate
 
-- **Severity**: P2
+- **Alert name**: `high_error_rate`
+- **Severity**: P1 (page on-call immediately)
+- **Trigger**: `error_rate_pct > 1 for 5m`
+- **SLO**: Error rate < 1% (99.0% of 28-day window)
+- **Impact**: Users receive 500 errors; complete request failure
+
+### Detection
+- Dashboard Panel 3 (Error Rate) shows spike above 1%
+- `/metrics` endpoint: check `error_breakdown` for error types
+- Logs: filter for `"level": "error"` in `data/logs.jsonl`
+
+### Triage
+1. Group logs by `error_type` to identify the failure pattern:
+   - `RuntimeError` → likely `tool_fail` incident (Vector store timeout)
+   - `ValidationError` → schema mismatch in request/response
+   - `TimeoutError` → upstream service unresponsive
+2. Inspect **failed traces** in Langfuse (filter by status = error)
+3. Check incident toggles: `GET /health` → look at `incidents.tool_fail`
+4. Check if the error correlates with a specific `feature` or `user_id_hash`
+
+### Mitigation
+1. **If `tool_fail` is enabled**: Disable it: `POST /incidents/tool_fail/disable`
+2. **If organic**: Rollback the latest code change
+3. Disable the failing tool/retrieval source
+4. Switch to a fallback model or return a cached response
+
+### Prevention
+- Add retry logic with exponential backoff for tool calls
+- Implement circuit breaker pattern for external dependencies
+- Add canary deployments to catch errors before full rollout
+
+---
+
+## 3. Cost budget spike
+
+- **Alert name**: `cost_budget_spike`
+- **Severity**: P2 (investigate within 30 minutes)
 - **Trigger**: `hourly_cost_usd > 2x_baseline for 15m`
-- **Impact**: Burn rate exceeds budget — potential unexpected costs
+- **SLO**: Daily cost < $5.00 (100% adherence)
+- **Impact**: Token burn rate exceeds budget allocation
 
-**Investigation Steps**:
-1. Split recent traces by `feature` and `model` in Langfuse
-2. Compare `tokens_in` vs `tokens_out` to find unusually large completions
-3. Check if `cost_spike` incident toggle is enabled
-4. Identify top 5 most expensive requests by `cost_usd` in logs
+### Detection
+- Dashboard Panel 4 (Cost Over Time) shows sharp cost increase
+- `/metrics` endpoint: compare `avg_cost_usd` against baseline ($0.0021)
+- Langfuse: check `usage_details.output` for abnormally high token counts
 
-**Mitigation**:
-- Shorten prompts by reducing RAG context window
-- Route easy/simple requests to a cheaper model
-- Apply prompt caching for repeated queries
-- Set a hard token limit per request
+### Triage
+1. Split traces by **feature** and **model** in Langfuse to isolate the source
+2. Compare `tokens_in` vs `tokens_out` — check if output tokens are abnormal
+   - Normal output: 80–180 tokens → ~$0.002/req
+   - `cost_spike` active: 320–720 tokens → ~$0.008/req (4x)
+3. Check incident toggles: `GET /health` → look at `incidents.cost_spike`
+4. Check if a specific user or feature is driving the cost spike
 
----
+### Mitigation
+1. **If `cost_spike` is enabled**: Disable it: `POST /incidents/cost_spike/disable`
+2. **If organic**: Shorten system prompts to reduce token usage
+3. Route simple queries (e.g., `feature=summary`) to a cheaper model
+4. Apply prompt caching for repeated queries
 
-## 4. Quality Score Degraded
-
-- **Severity**: P2
-- **Trigger**: `quality_score_avg < 0.60 for 15m`
-- **Impact**: Responses are incomplete or irrelevant — user experience degrades
-
-**Investigation Steps**:
-1. Inspect recent `quality_score` values in metrics: `GET /metrics` endpoint → `quality_avg`
-2. Look for patterns: are low-quality requests from a specific feature or query type?
-3. Check if the RAG retrieval is returning empty or irrelevant documents
-4. Compare `tokens_out` — very short answers often correlate with low quality
-
-**Mitigation**:
-- Review and update RAG corpus / embeddings
-- Improve the system prompt with more specific instructions
-- Add query routing to handle edge cases differently
-- If caused by an incident toggle, disable it via `/admin/incidents`
+### Prevention
+- Set per-user token budgets
+- Implement request-level cost guards (reject if estimated cost > threshold)
+- Use tiered models: cheap model for simple queries, expensive for complex
 
 ---
 
-## 5. SLO Error Budget Warning
+## 4. Low quality score
 
-- **Severity**: P3
-- **Trigger**: `error_budget_remaining_pct < 20`
-- **Impact**: Less than 20% of the 28-day error budget remains — risky to deploy changes
+- **Alert name**: `low_quality_score`
+- **Severity**: P2 (investigate within 30 minutes)
+- **Trigger**: `quality_score_avg < 0.70 for 15m`
+- **SLO**: Quality score average ≥ 0.70 (95.0% of 28-day window)
+- **Impact**: Answer quality degradation; users receive poor or irrelevant responses
 
-**Investigation Steps**:
-1. Review the SLO table in `config/slo.yaml` to identify which SLI is burning fastest
-2. Check frequency of alerts in the past 7 days
-3. Correlate budget burn with specific incidents or releases
+### Detection
+- Dashboard Panel 6 (Quality Proxy) shows average dropping below 0.70
+- `/metrics` endpoint: check `quality_avg`
+- Langfuse: check `metadata.doc_count` — if frequently 0, RAG is failing
 
-**Mitigation**:
-- Freeze non-critical deployments until budget recovers
-- Focus engineering effort on reducing the #1 SLI burn source
-- Consider a planned maintenance window to address root causes
+### Triage
+1. Check if RAG is returning empty results (`doc_count: 0` in trace metadata)
+   - This drops quality score from ~0.88 to ~0.60
+2. Check if answers are unusually short (< 40 chars loses 0.1 quality points)
+3. Check if PII redaction is being applied to answers (loses 0.2 quality points)
+4. Look for keyword overlap failures between questions and answers
+
+### Mitigation
+1. Expand the RAG corpus with more domain documents
+2. Broaden keyword matching in `mock_rag.py` to catch more queries
+3. Tune the LLM prompt to produce longer, more relevant answers
+4. Review PII patterns to avoid over-redaction
+
+### Prevention
+- Add automated quality regression tests with expected answer benchmarks
+- Monitor `doc_count` as a leading indicator for quality degradation
+- Use human feedback (thumbs up/down) as a secondary quality signal
 
 ---
 
-## 6. Low Throughput
+## 5. Token budget exceeded
 
-- **Severity**: P3
-- **Trigger**: `requests_per_minute < 1 for 10m`
-- **Impact**: No traffic — possible deployment failure, DNS issue, or load balancer problem
+- **Alert name**: `token_budget_exceeded`
+- **Severity**: P3 (informational, investigate during business hours)
+- **Trigger**: `tokens_out_total > 50000 in 1h`
+- **SLO**: Leading indicator for `daily_cost_usd`
+- **Impact**: Approaching daily cost budget; early warning before budget breach
 
-**Investigation Steps**:
-1. Verify the application is running: `GET /health` should return `{"status": "ok"}`
-2. Check recent deployments or infrastructure changes
-3. Validate DNS and load balancer configuration
-4. Look at server logs for startup errors
+### Detection
+- Dashboard Panel 5 (Tokens In/Out) shows rapid accumulation
+- `/metrics` endpoint: check `tokens_out_total`
+- This alert fires *before* the cost alert, giving time to react
 
-**Mitigation**:
-- Restart the application service if unhealthy
-- Rollback to the last known good deployment
-- Escalate to infrastructure team if DNS/network is the cause
+### Triage
+1. Check the current request rate (`traffic` from `/metrics`)
+2. Calculate the projected hourly cost: `tokens_out_total / 1,000,000 * 15`
+3. Identify the top users/features consuming tokens in Langfuse
+4. Determine if the trend is sustained or a burst
+
+### Mitigation
+1. Apply rate limiting to high-volume users
+2. Implement response length caps (e.g., `max_tokens = 150`)
+3. Route lower-priority requests to a queue for batch processing
+
+### Prevention
+- Set up per-user and per-feature token quotas
+- Implement progressive rate limiting that tightens as budget usage increases
+- Add cost estimation to request preprocessor (reject expensive requests early)
+
