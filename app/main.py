@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+import json
 from structlog.contextvars import bind_contextvars
 
 from .agent import LabAgent
@@ -40,6 +41,33 @@ async def health() -> dict:
 @app.get("/metrics")
 async def metrics() -> dict:
     return snapshot()
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def serve_dashboard():
+    with open("app/dashboard.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/logs/recent")
+async def recent_logs():
+    try:
+        import os
+        from pathlib import Path
+        log_path = Path(os.getenv("LOG_PATH", "data/logs.jsonl"))
+        if not log_path.exists():
+            return {"logs": []}
+        with open(log_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            logs = []
+            for line in lines[-15:]:
+                try:
+                    logs.append(json.loads(line))
+                except:
+                    pass
+            return {"logs": logs}
+    except Exception as e:
+        return {"logs": []}
 
 
 @app.post("/chat", response_model=ChatResponse)
