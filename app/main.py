@@ -4,15 +4,8 @@ import json
 import os
 from pathlib import Path
 
-<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Request, Query
-from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
-=======
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, HTMLResponse
-import json
->>>>>>> feat/tuananh
+from fastapi.responses import FileResponse, JSONResponse
 from structlog.contextvars import bind_contextvars
 
 from .agent import LabAgent
@@ -52,7 +45,6 @@ async def metrics() -> dict:
     return snapshot()
 
 
-<<<<<<< HEAD
 @app.get("/dashboard")
 async def dashboard() -> FileResponse:
     return FileResponse(STATIC_DIR / "dashboard.html")
@@ -71,38 +63,10 @@ async def logs_endpoint(n: int = Query(default=50, ge=1, le=500)) -> list:
         except json.JSONDecodeError:
             continue
     return list(reversed(records))
-=======
-@app.get("/dashboard", response_class=HTMLResponse)
-async def serve_dashboard():
-    with open("app/dashboard.html", "r", encoding="utf-8") as f:
-        return f.read()
-
-
-@app.get("/logs/recent")
-async def recent_logs():
-    try:
-        import os
-        from pathlib import Path
-        log_path = Path(os.getenv("LOG_PATH", "data/logs.jsonl"))
-        if not log_path.exists():
-            return {"logs": []}
-        with open(log_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            logs = []
-            for line in lines[-15:]:
-                try:
-                    logs.append(json.loads(line))
-                except:
-                    pass
-            return {"logs": logs}
-    except Exception as e:
-        return {"logs": []}
->>>>>>> feat/tuananh
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: Request, body: ChatRequest) -> ChatResponse:
-    # TODO: Enrich logs with request context (user_id_hash, session_id, feature, model, env)
     bind_contextvars(
         user_id_hash=hash_user_id(body.user_id),
         session_id=body.session_id,
@@ -110,7 +74,6 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         model="gpt-4",
         env=os.getenv("APP_ENV", "dev"),
     )
-    
     log.info(
         "request_received",
         service="api",
@@ -141,7 +104,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             cost_usd=result.cost_usd,
             quality_score=result.quality_score,
         )
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         error_type = type(exc).__name__
         record_error(error_type)
         log.error(
