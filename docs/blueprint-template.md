@@ -3,8 +3,8 @@
 > **Instruction**: Fill in all sections below. This report is designed to be parsed by an automated grading assistant. Ensure all tags (e.g., `[GROUP_NAME]`) are preserved.
 
 ## 1. Team Metadata
-- [GROUP_NAME]: A1-C401
-- [REPO_URL]: https://github.com/TBNRGarret/Lab13-A1-C401.git
+- GROUP_NAME: A1-C401
+- REPO_URL: https://github.com/TBNRGarret/Lab13-A1-C401.git
 - [MEMBERS]:
   - Member A: [Hoàng Tuấn Anh] | Role: Logging & PII
   - Member B: [Đàm Lê Văn Toàn] | Role: Tracing & Enrichment
@@ -25,8 +25,8 @@
 ## 3. Technical Evidence (Group)
 
 ### 3.1 Logging & Tracing
-- [EVIDENCE_CORRELATION_ID_SCREENSHOT]: [Lab13-Observability\docs\evidence_pii_and_correlation.png]
-- [EVIDENCE_PII_REDACTION_SCREENSHOT]: [Lab13-Observability\docs\evidence_pii_and_correlation.png]
+- EVIDENCE_CORRELATION_ID_SCREENSHOT: [Lab13-Observability\docs\evidence_pii_and_correlation.png]
+- EVIDENCE_PII_REDACTION_SCREENSHOT: [Lab13-Observability\docs\evidence_pii_and_correlation.png]
 - [EVIDENCE_TRACE_WATERFALL_SCREENSHOT]: [Path to image]
 - [TRACE_WATERFALL_EXPLANATION]: (Briefly explain one interesting span in your trace)
 
