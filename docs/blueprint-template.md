@@ -10,7 +10,7 @@
   - Member B: [Đàm Lê Văn Toàn] | Role: Tracing & Enrichment
   - Member C: Vũ Lê Hoàng | Role: SLO & Alerts
   - Member D: [Nguyễn Quang Trường] | Role: Load Test + Incident Injection
-  - Member E: [Name] | Role: Dashboard + Evidence
+  - Member E: [Vũ Hồng Quang] | Role: Dashboard + Evidence
   - Member F: Phạm Tuấn Anh | Role: Blueprint + Demo lead
 
 ---
@@ -130,9 +130,21 @@
   5. Incident Status Endpoint (`app/main.py`): Thêm GET `/incidents/status` endpoint để check status tất cả incidents.
 - **[EVIDENCE_LINK]**: https://github.com/TBNRGarret/Lab13-A1-C401/commit/c3ef40a
 
-### [MEMBER_E_NAME]
-- [TASKS_COMPLETED]: 
-- [EVIDENCE_LINK]: 
+### Vũ Hồng Quang - Dashboard & Evidence
+- **[TASKS_COMPLETED]**:
+  1. Thiết kế và triển khai dashboard local chạy trực tiếp trên `localhost`, tích hợp với ứng dụng để theo dõi metric thời gian thực từ endpoint `/metrics` và logs từ `/logs`, giúp nhóm có một giao diện quan sát tập trung ngay trong buổi demo.
+  2. Xây dựng đầy đủ 6 panel theo spec của lab gồm `Latency`, `Traffic`, `Error Rate`, `Cost`, `Tokens I/O`, và `Quality Proxy`, đồng thời hiển thị rõ SLO/alert threshold để người xem có thể đối chiếu nhanh tình trạng hệ thống với mục tiêu vận hành.
+  3. Nâng cấp giao diện dashboard theo hướng trực quan và chuyên nghiệp hơn: cải thiện bố cục, màu sắc, chart visuals, animation nhẹ khi dữ liệu cập nhật, và tối ưu phần hiển thị logs để dễ đọc các trường quan trọng trong từng log line.
+  4. Bổ sung log viewer trên dashboard để hiển thị đầy đủ từng dòng trong `data/logs.jsonl`, bao gồm phần raw JSON log line, giúp nhóm thuận tiện lấy evidence cho correlation ID, PII redaction, error_type, latency và các metadata liên quan.
+  5. Hỗ trợ thu thập và chuẩn hóa evidence cho phần Dashboard & SLO trong báo cáo cuối kỳ, đảm bảo ảnh dashboard, logs và các bằng chứng liên quan có thể dùng trực tiếp trong report và demo live.
+- **[EVIDENCE_LINK]**:
+  - [02bd1f4](https://github.com/TBNRGarret/Lab13-A1-C401/commit/02bd1f4) - implement dasboard run at localhost
+  - [a045645](https://github.com/TBNRGarret/Lab13-A1-C401/commit/a045645) - update dashboard visual
+  - [2190626](https://github.com/TBNRGarret/Lab13-A1-C401/commit/2190626) - update dashboard visual
+  - [5f58030](https://github.com/TBNRGarret/Lab13-A1-C401/commit/5f58030) - update dashboard visual
+  - [96737e6](https://github.com/TBNRGarret/Lab13-A1-C401/commit/96737e6) - show full log line
+  - Ảnh dashboard với 6 panel: docs/evidence_dashboard_6_panels.png
+
 
 ### Member F: Phạm Tuấn Anh - Blueprint & Demo Lead
 **[TASKS_COMPLETED]**:
