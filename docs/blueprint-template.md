@@ -33,12 +33,13 @@
 ### 3.2 Dashboard & SLOs
 - [DASHBOARD_6_PANELS_SCREENSHOT]: [Path to image]
 - [SLO_TABLE]:
-| SLI | Target | Window | Current Value |
-|---|---|---|---|
-| Latency P95 | < 1000ms | 28d | 163.2ms |
-| Error Rate | < 1% | 28d | 0% | 
-| Cost Budget | < $5.00/day | 1d | $0.0021/req (~$2.10/day baseline) | 
-| Quality Score Avg | > 0.70 | 28d | 0.8296 | 
+<table>
+<tr><th>SLI</th><th>Target</th><th>Window</th><th>Current Value</th></tr>
+<tr><td>Latency P95</td><td>< 1000ms</td><td>28d</td><td>163.2ms</td></tr>
+<tr><td>Error Rate</td><td>< 1%</td><td>28d</td><td>0%</td></tr>
+<tr><td>Cost Budget</td><td>< $5.00/day</td><td>1d</td><td>$0.0021/req (~$2.10/day baseline)</td></tr>
+<tr><td>Quality Score Avg</td><td>> 0.70</td><td>28d</td><td>0.8296</td></tr>
+</table> 
 
 ### 3.3 Alerts & Runbook
 - [ALERT_RULES_SCREENSHOT]: [Path to image]
