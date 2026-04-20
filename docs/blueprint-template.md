@@ -3,9 +3,9 @@
 > **Instruction**: Fill in all sections below. This report is designed to be parsed by an automated grading assistant. Ensure all tags (e.g., `[GROUP_NAME]`) are preserved.
 
 ## 1. Team Metadata
-- [GROUP_NAME]: A1-C401
-- [REPO_URL]: https://github.com/TBNRGarret/Lab13-A1-C401.git
-- [MEMBERS]:
+- GROUP_NAME: A1-C401
+- REPO_URL: https://github.com/TBNRGarret/Lab13-A1-C401.git
+- MEMBERS:
   - Member A: [Name] | Role: Logging & PII
   - Member B: [Đàm Lê Văn Toàn] | Role: Tracing & Enrichment
   - Member C: Vũ Lê Hoàng | Role: SLO & Alerts
@@ -32,7 +32,8 @@
 
 ### 3.2 Dashboard & SLOs
 - [DASHBOARD_6_PANELS_SCREENSHOT]: [Path to image]
-- [SLO_TABLE]:
+- SLO_TABLE:
+
 | SLI | Target | Window | Current Value |
 |---|---:|---|---:|
 | Latency P95 | < 1000ms | 28d | 151ms |
@@ -70,9 +71,15 @@
   5. Triển khai cơ chế giả lập lỗi ngẫu nhiên 10% (`random_10_percent_error`) để kiểm tra khả năng chịu lỗi của hệ thống. Tối ưu hóa thứ tự Capture Trace (đưa lên đầu hàm `run`) để đảm bảo ngay cả khi xảy ra Exception, hệ thống vẫn thu thập đầy đủ Metadata (User ID, Session ID, Tags) phục vụ việc Debugging.
 - **[EVIDENCE_LINK]**: https://github.com/TBNRGarret/Lab13-A1-C401/commit/985b12735977250a60b1c412a87317c16352b458
 
-### [Vũ Lê Hoàng - SLO & Alerts]
-- [TASKS_COMPLETED]: Add SLO and Alerts, add blueprint report
-- [EVIDENCE_LINK]: https://github.com/TBNRGarret/Lab13-A1-C401/commit/0bc2380cf7d704bed079b067e18e7f7263c8e3bb
+### Vũ Lê Hoàng - SLO & Alerts
+- **TASKS_COMPLETED**:
+  1. Xây dựng bộ SLO cho hệ thống quan sát gồm 4 chỉ số chính: `Latency P95 < 1000ms`, `Error Rate < 1%`, `Cost Budget < $5.00/day`, và `Quality Score Avg > 0.70`, đồng thời cập nhật bảng `[SLO_TABLE]` để nhóm theo dõi được ngưỡng, cửa sổ đo và giá trị hiện tại.
+  2. Cấu hình bộ Alert Rules trong `config/alert_rules.yaml` theo mức độ ưu tiên P1/P2/P3, bao phủ các tình huống `high_error_rate`, `high_latency_p95`, `cost_budget_spike`, `low_quality_score`, `token_budget_exceeded`, và `core_banking_500_error` để hệ thống có thể cảnh báo sớm cả lỗi dịch vụ lẫn vượt ngân sách vận hành.
+  3. Viết runbook tại `docs/alerts.md` theo quy trình `Detect -> Triage -> Mitigate -> Prevent`, liên kết giữa Dashboard, `/metrics`, logs và Langfuse traces, giúp On-call engineer nhanh chóng xác định nguyên nhân và hướng xử lý khi alert được kích hoạt.
+  4. Hoàn thiện phần báo cáo cá nhân trong blueprint, tổng hợp lại mục tiêu SLO, cơ chế alert và bằng chứng commit để thể hiện rõ đóng góp của vai trò `SLO & Alerts` trong bài lab Observability.
+- **[EVIDENCE_LINK]**: https://github.com/TBNRGarret/Lab13-A1-C401/commit/0bc2380cf7d704bed079b067e18e7f7263c8e3bb
+- **[EVIDENCE_LINK]**: https://github.com/TBNRGarret/Lab13-A1-C401/commit/02f7ff3e09b9b95638d531b8510b0c8cdc69577b
+- **[EVIDENCE_LINK]**: https://github.com/TBNRGarret/Lab13-A1-C401/commit/335ebe2f71a8872c72eb05469d9fb71dd09e54dc
 
 ### [MEMBER_D_NAME]
 - [TASKS_COMPLETED]: 
