@@ -1,19 +1,72 @@
 alerts:
-  - name: high_latency_p95
-    severity: P2
-    condition: latency_p95_ms > 5000 for 30m
-    type: symptom-based
-    owner: team-oncall
-    runbook: docs/alerts.md#1-high-latency-p95
+  # ────────── P1 Alerts (Critical - Page Immediately) ──────────
+
   - name: high_error_rate
     severity: P1
     condition: error_rate_pct > 5 for 5m
     type: symptom-based
+    description: "More than 5% of requests are failing. Users are receiving errors."
     owner: team-oncall
     runbook: docs/alerts.md#2-high-error-rate
+    notify:
+      - channel: "#incidents"
+        method: pagerduty
+
+  # ────────── P2 Alerts (Warning - Investigate Soon) ──────────
+
+  - name: high_latency_p95
+    severity: P2
+    condition: latency_p95_ms > 5000 for 30m
+    type: symptom-based
+    description: "P95 latency exceeds 5000ms for 30 minutes. SLO burn rate is high."
+    owner: team-oncall
+    runbook: docs/alerts.md#1-high-latency-p95
+    notify:
+      - channel: "#alerts"
+        method: slack
+
   - name: cost_budget_spike
     severity: P2
     condition: hourly_cost_usd > 2x_baseline for 15m
     type: symptom-based
+    description: "Hourly cost is running at more than 2x the baseline for 15 minutes."
     owner: finops-owner
     runbook: docs/alerts.md#3-cost-budget-spike
+    notify:
+      - channel: "#finops"
+        method: slack
+
+  - name: quality_score_degraded
+    severity: P2
+    condition: quality_score_avg < 0.60 for 15m
+    type: symptom-based
+    description: "Average quality score dropped below 0.60. Responses may be unreliable."
+    owner: team-oncall
+    runbook: docs/alerts.md#4-quality-score-degraded
+    notify:
+      - channel: "#alerts"
+        method: slack
+
+  # ────────── P3 Alerts (Low - Informational) ──────────
+
+  - name: slo_error_budget_warning
+    severity: P3
+    condition: error_budget_remaining_pct < 20
+    type: slo-based
+    description: "Less than 20% of the monthly error budget remains. Reduce risk."
+    owner: team-oncall
+    runbook: docs/alerts.md#5-slo-error-budget-warning
+    notify:
+      - channel: "#reliability"
+        method: slack
+
+  - name: low_throughput
+    severity: P3
+    condition: requests_per_minute < 1 for 10m
+    type: symptom-based
+    description: "No traffic observed for 10 minutes. Possible deployment or network issue."
+    owner: team-oncall
+    runbook: docs/alerts.md#6-low-throughput
+    notify:
+      - channel: "#alerts"
+        method: slack
