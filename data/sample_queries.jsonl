@@ -1,12 +1,12 @@
-{"user_id":"u01","session_id":"s01","feature":"qa","message":"What is your refund policy? My email is student@vinuni.edu.vn"}
-{"user_id":"u02","session_id":"s02","feature":"qa","message":"Explain why metrics traces and logs work together"}
-{"user_id":"u03","session_id":"s03","feature":"summary","message":"Summarize the monitoring policy for production logging"}
-{"user_id":"u04","session_id":"s04","feature":"qa","message":"Can I get help with policy and monitoring?"}
-{"user_id":"u05","session_id":"s05","feature":"qa","message":"Here is my phone 0987654321, what should be logged?"}
-{"user_id":"u06","session_id":"s06","feature":"summary","message":"Give me a short summary of the observability workflow"}
-{"user_id":"u07","session_id":"s07","feature":"qa","message":"What should not appear in app logs?"}
-{"user_id":"u08","session_id":"s08","feature":"qa","message":"How do I debug tail latency?"}
-{"user_id":"u09","session_id":"s09","feature":"qa","message":"What is the policy for PII and credit card 4111 1111 1111 1111?"}
-{"user_id":"u10","session_id":"s10","feature":"qa","message":"How should alerts be designed?"}
-{"user_id":"u11","session_id":"s11","feature":"chamsoc_nganhang","message":"Tôi muốn khóa khẩn cấp thẻ credit mang số 4111 2222 3333 4444. Số passport mặt trước của tôi là B12345"}
-{"user_id":"u12","session_id":"s12","feature":"chamsoc_nganhang","message":"Mở lại thẻ tín dụng bị khóa. CMND cũ của tôi là B1234567 còn thẻ là 4111 1111 2222 3333."}
+
+{"user_id":"u01","session_id":"s01","feature":"qa","message":"Tôi bị rớt ví, khóa khẩn cấp thẻ số 4111 2222 3333 4444. Số CMND của tôi là 012345678912."}
+{"user_id":"u02","session_id":"s02","feature":"qa","message":"Lãi suất vay thế chấp mua nhà đang là bao nhiêu?"}
+{"user_id":"u03","session_id":"s03","feature":"qa","message":"Hãy kiểm tra giao dịch ngày hôm qua, hộ chiếu của tôi mặt trước là B1234567"}
+{"user_id":"u04","session_id":"s04","feature":"qa","message":"Làm sao để báo cáo giao dịch lừa đảo?"}
+{"user_id":"u05","session_id":"s05","feature":"qa","message":"Gọi lại cho tôi qua SĐT 0901234567 để tư vấn mở thẻ tín dụng."}
+{"user_id":"u06","session_id":"s06","feature":"summary","message":"Địa chỉ gửi sao kê tới Số 10, Ngõ 5, Đường Trần Duy Hưng, Hà Nội."}
+{"user_id":"u07","session_id":"s07","feature":"qa","message":"What is the policy for fraud handling?"}
+{"user_id":"u08","session_id":"s08","feature":"qa","message":"I lost my phone and card, what should I do first?"}
+{"user_id":"u09","session_id":"s09","feature":"qa","message":"Điều kiện thanh toán tối thiểu thẻ tín dụng hàng tháng?"}
+{"user_id":"u10","session_id":"s10","feature":"qa","message":"Giải đáp số thẻ 4555 1234 5678 9012 có bị trừ tiền oan không?"}
+
